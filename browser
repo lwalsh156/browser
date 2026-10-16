@@ -1,0 +1,62 @@
+import sys
+from PyQt5.QtWidgets import QApplication, QMainWindow, QToolBar, QAction, QLineEdit
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtCore import QUrl
+
+
+class MiniBrowser(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Mini Browser")
+        self.resize(1000, 700)
+
+        # Web view
+        self.view = QWebEngineView()
+        self.setCentralWidget(self.view)
+        self.view.setUrl(QUrl("https://www.google.com"))
+
+        # Toolbar
+        toolbar = QToolBar("Navigation")
+        self.addToolBar(toolbar)
+
+        # Back button
+        back_action = QAction("Back", self)
+        back_action.triggered.connect(self.view.back)
+        toolbar.addAction(back_action)
+
+        # Forward button
+        forward_action = QAction("Forward", self)
+        forward_action.triggered.connect(self.view.forward)
+        toolbar.addAction(forward_action)
+
+        # Reload button
+        reload_action = QAction("Reload", self)
+        reload_action.triggered.connect(self.view.reload)
+        toolbar.addAction(reload_action)
+
+        # URL bar
+        self.url_bar = QLineEdit()
+        self.url_bar.returnPressed.connect(self.load_url)
+        toolbar.addWidget(self.url_bar)
+
+        # Sync URL bar when page changes
+        self.view.urlChanged.connect(self.update_url_bar)
+
+    def load_url(self):
+        url_text = self.url_bar.text().strip()
+        if not url_text:
+            return
+        if not url_text.startswith("http://") and not url_text.startswith("https://"):
+            url_text = "https://" + url_text
+        self.view.setUrl(QUrl(url_text))
+
+    def update_url_bar(self, qurl):
+        self.url_bar.setText(qurl.toString())
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MiniBrowser()
+    window.show()
+    sys.exit(app.exec_())
